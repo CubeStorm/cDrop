@@ -1,0 +1,10 @@
+name: ArtMc-Drop
+version: 0.1;
+description: ArtMc-Drop by CubeStorm for ArtMc.pl
+author: CubeStorm
+main: pl.artmc.drop.Main
+api-version: 1.16
+commands:
+  drop:
+    description: Drop plugin by CubeStorm for ArtMc.pl
+    usage: /drop
