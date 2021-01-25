@@ -39,20 +39,48 @@ public abstract class Mineral {
     public Mineral() {}
 
     // Getters
-    public abstract double getChance();
-    public abstract double getChanceVip();
-    public abstract double getChanceTurbo();
-    public abstract int getExp();
-    public abstract Material getMaterial();
-    public abstract String getName();
-    public abstract int getId();
+    public double getChance() {
+        return this.dropChance;
+    }
+    public double getChanceVip() {
+        return this.dropChanceVip;
+    }
+    public double getChanceTurbo() {
+        return this.dropChanceTurboDrop;
+    }
+    public int getExp() {
+        return this.exp;
+    }
+    public Material getMaterial() {
+        return this.material;
+    }
+    public String getName() {
+        return this.name;
+    }
+    public int getId() {
+        return this.id;
+    }
 
     // Setters
-    public abstract void setChance(double value);
-    public abstract void setChanceVip(double value);
-    public abstract void setChanceTurboDrop(double value);
-    public abstract void setExp(int value);
-    public abstract void setMaterial(Material material);
-    public abstract void setName(String name);
-    public abstract void setId(int id);
+    public void setChance(double value) {
+        this.dropChance = value;
+    }
+    public void setChanceVip(double value) {
+        this.dropChanceVip = value;
+    }
+    public void setChanceTurboDrop(double value) {
+        this.dropChanceTurboDrop = value;
+    }
+    public void setExp(int value) {
+        this.exp = value;
+    }
+    public void setMaterial(Material material) {
+        this.material = material;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
 }
