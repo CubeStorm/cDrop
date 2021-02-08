@@ -1,4 +1,4 @@
-package pl.artmc.drop;
+package pl.cubestorm.cdrop.Commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -6,29 +6,32 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import pl.artmc.drop.Minerals.*;
+import pl.cubestorm.cdrop.Config;
+import pl.cubestorm.cdrop.Minerals.Mineral;
 
 import java.util.Arrays;
+import java.util.UUID;
 
-import static pl.artmc.drop.Main.getMinerals;
-import static pl.artmc.drop.Main.msg;
+import static pl.cubestorm.cdrop.Main.getMineralList;
+import static pl.cubestorm.cdrop.Main.msg;
+import static pl.cubestorm.cdrop.Player.changeDropState;
+import static pl.cubestorm.cdrop.Player.getDropState;
 
-public class GuiCommand implements CommandExecutor, Listener {
+public class Gui implements CommandExecutor, Listener {
     private final Mineral[] MINERALS;
     private final Inventory INV;
 
     /**
      * Class constructor, dependency injection, creating new inventory without owner
      */
-    public GuiCommand() {
-        this.MINERALS = getMinerals();
+    public Gui() {
+        this.MINERALS = getMineralList();
 
         // Create a new inventory
         this.INV = Bukkit.createInventory(null, 9*4, "Drop");
@@ -36,21 +39,16 @@ public class GuiCommand implements CommandExecutor, Listener {
 
     /**
      * Gui command /drop
-     * @param sender Command sender
-     * @param cmd Command
-     * @param label Command's label
-     * @param args Command's arguments
-     * @return boolean
-     */
+     **/
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            String playerName = player.getName();
+        if (sender instanceof org.bukkit.entity.Player) {
+            org.bukkit.entity.Player player = (org.bukkit.entity.Player) sender;
+
             player.openInventory(this.INV);
 
             // Put the items into the inventory
-            initializeItems(playerName);
+            initializeItems(player.getUniqueId());
 
             player.playSound(player.getLocation(), Sound.BLOCK_BARREL_OPEN, 1.0f, 1.0f);
 
@@ -62,12 +60,12 @@ public class GuiCommand implements CommandExecutor, Listener {
     /**
      * Call where put some creating items
      */
-    private void initializeItems(String player) {
+    private void initializeItems(UUID uuid) {
         int[] indexes = {10, 20, 12, 22, 14, 24, 16, 35};
         int i = 0;
 
         for (Mineral object : this.MINERALS)
-            this.INV.setItem(indexes[i++], item(object, player));
+            this.INV.setItem(indexes[i++], item(object, uuid));
     }
 
     /**
@@ -75,33 +73,30 @@ public class GuiCommand implements CommandExecutor, Listener {
      * @param object Object of Mineral class
      * @return Item with metadata
      */
-    private ItemStack item(final Mineral object, final String player) {
-        final ItemStack item = new ItemStack(object.getMaterial(), 1);
-        final ItemMeta meta = item.getItemMeta();
+    private ItemStack item(Mineral object, UUID uuid) {
+        ItemStack item = new ItemStack(object.getMaterial(), 1);
+        ItemMeta meta = item.getItemMeta();
 
         // Set the name of the item
-        if (object.getName() != null) {
-            meta.setDisplayName(msg("&3" + object.getName()));
-        } else {
-            meta.setDisplayName(msg("&3Cobblestone"));
-        }
+        meta.setDisplayName(msg("&3" + object.getName()));
 
         // Set the lore of the item
-        meta.setLore(Arrays.asList(this.lore(object, player)));
+        meta.setLore(Arrays.asList(this.lore(object, uuid)));
 
         item.setItemMeta(meta);
 
         return item;
     }
 
-    private String[] lore(Mineral object, String player) {
+    private String[] lore(Mineral object, UUID uuid) {
+        String state = getDropState(uuid, object.getName()) ? "&aOn" : "&cOff";
         String[] lore = new String[6];
-        User user = new User();
-        lore[0] = msg("&7Gracz: &a" + object.getChance() + "%");
-        lore[1] = msg("&7Vip: &a" + (object.getChance() + object.getChanceVip()) + "%");
-        lore[2] = msg("&7TurboDrop: &a" + (object.getChance() + object.getChanceTurbo()) + "%");
+
+        lore[0] = msg("&7Gracz: &a" + Config.getDropChance(object.getName()) + "%");
+        lore[1] = msg("&7Vip: &a" + (Config.getDropChance(object.getName()) + Config.getVipChance()) + "%");
+        lore[2] = msg("&7TurboDrop: &a" + (Config.getDropChance(object.getName()) + Config.getTurboDropChance()) + "%");
         lore[3] = msg("&8----------------------------");
-        lore[4] = msg("&7Stan: " + user.getState(player, object.getId()));
+        lore[4] = msg("&7Stan: " + state);
         lore[5] = msg("&8----------------------------");
 
         return lore;
@@ -110,21 +105,21 @@ public class GuiCommand implements CommandExecutor, Listener {
 
     /**
      * Cancel grabbing and dragging item's from gui
-     * @param e Drag event
+     * @param event Drag event
      */
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
+    public void onInventoryClick(InventoryClickEvent event) {
         for (Mineral object : this.MINERALS) {
-            if (e.getInventory().contains(object.getMaterial()))
-                e.setCancelled(true);
-            if (e.getCurrentItem() != null) {
-                HumanEntity player = e.getWhoClicked();
-                if (e.getCurrentItem().getType().equals(object.getMaterial())) {
-                    new User(player.getName(), object.getId());
+            if (event.getInventory().equals(this.INV))
+                event.setCancelled(true);
+            if (event.getCurrentItem() != null) {
+                HumanEntity player = event.getWhoClicked();
+                if (event.getCurrentItem().getType().equals(object.getMaterial())) {
+                    changeDropState(player.getUniqueId(), object.getName());
                     player.closeInventory();
                     player.openInventory(this.INV);
                     // Put the items into the inventory
-                    initializeItems(player.getName());
+                    initializeItems(player.getUniqueId());
                 }
             }
         }

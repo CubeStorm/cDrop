@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="ArtMc-Drop:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/ArtMc_Drop_jar</output-path>
-    <root id="archive" name="ArtMc-Drop.jar">
-      <element id="module-output" name="ArtMc-Drop" />
-    </root>
-  </artifact>
-</component>

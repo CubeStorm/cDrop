@@ -1,4 +1,4 @@
-package pl.artmc.drop;
+package pl.cubestorm.cdrop.Events;
 
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -9,28 +9,20 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import pl.artmc.drop.Minerals.*;
+import pl.cubestorm.cdrop.Config;
+import pl.cubestorm.cdrop.Minerals.*;
 
-import static pl.artmc.drop.Main.getMinerals;
-import static pl.artmc.drop.Main.msg;
+import static pl.cubestorm.cdrop.Main.getMineralList;
+import static pl.cubestorm.cdrop.Main.msg;
+import static pl.cubestorm.cdrop.Player.getDropState;
 
-/**
- * Fully service of drop from stone class
- */
-public class DropEvent implements Listener {
+public class Drop implements Listener {
     private final Mineral[] MINERALS;
 
-    /**
-     * Constructor class, dependency injection
-     */
-    public DropEvent() {
-        this.MINERALS = getMinerals();
+    public Drop() {
+        this.MINERALS = getMineralList();
     }
 
-    /**
-     * Event Handler relating to break stone by player
-     * @param event - Break Stone event
-     */
     @EventHandler
     public void BlockBreakEvent(BlockBreakEvent event) {
         Material block = event.getBlock().getType();
@@ -38,60 +30,61 @@ public class DropEvent implements Listener {
             // Block drop items
             event.setDropItems(false);
 
-            Player p = event.getPlayer();
+            Player player = event.getPlayer();
 
-            ItemStack itemInHand = p.getInventory().getItemInMainHand();
+            ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
             for (Mineral object : this.MINERALS) {
-                if (Math.random() * 100 <= object.getChance()) {
-                    String name = event.getPlayer().getName();
-                    boolean[] drops = Main.players.get(name);
+                double extraChance = 0;
 
-                    if(drops[object.getId()])
-                        this.giveItem(object.getMaterial(), p, itemInHand, object.getName(), object.getExp());
-                }
+                if (player.hasPermission("drop.vip"))
+                    extraChance += Config.getVipChance();
+                if (true)
+                    extraChance += Config.getTurboDropChance();
+
+                if (Math.random() * 100 <= Config.getDropChance(object.getName()) + extraChance)
+                    if (getDropState(player.getUniqueId(), object.getName()))
+                        this.giveItem(object, player, itemInHand);
             }
         }
     }
 
     /**
      * Final method relating to give player dropped item, send message and give exp
-     * @param drop Item, instance of Mineral class
-     * @param p Player
-     * @param itemInHand Item which player break block
-     * @param msg Message to display
-     * @param exp Exp from block
      */
-    public void giveItem(Material drop, Player p, ItemStack itemInHand, String msg, int exp) {
+    public void giveItem(Mineral mineral, Player player, ItemStack itemInHand) {
+        String mineralName = mineral.getName();
+
         // Check if player mine with FORTUNE (1/2/3) or not
-        int v = 1;
-        if (msg != null)
-            v = this.setValueFortune(itemInHand);
+        int amount = 1;
+        if (mineral.getName().equals("Cobblestone"))
+            amount = this.setValueFortune(itemInHand);
 
         // Check if player mine with SILK TOUCH or not
-        Material droppedBlock = this.setDrop(itemInHand, drop);
+        Material droppedBlock = this.setDrop(itemInHand, mineral.getMaterial());
 
-        this.addToInv(p, droppedBlock, v);
-        p.giveExp(exp);
-        if (msg != null)
-            p.sendMessage(msg("&7Gratulacje! Trafiles na &a" + msg + "&7 (&a" + v + "&7)"));
+        this.addToInv(player, droppedBlock, amount);
+        player.giveExp(Config.getExp(mineralName));
+
+        if (mineralName.equals("Cobblestone"))
+            player.sendMessage(msg("&7Gratulacje! Trafiles na &a" + mineralName + "&7 (&a" + amount + "&7)"));
     }
 
     /**
      * Check player inventory and add or drop item (using in giveItem())
-     * @param p Player
-     * @param block Item, instance of Mineral class
-     * @param v (value) Amount of dropped blocks
+     * @param player Player
+     * @param material Item, instance of Mineral class
+     * @param amount (value) Amount of dropped blocks
      */
-    public void addToInv(Player p, Material block, int v) {
-        if (block != null) {
-            Inventory inv = p.getInventory();
+    public void addToInv(Player player, Material material, int amount) {
+        if (material != null) {
+            Inventory inv = player.getInventory();
 
             if (!this.isFullInv(inv)) {
-                inv.addItem(new ItemStack(block, v));
+                inv.addItem(new ItemStack(material, amount));
             } else {
-                World world = p.getWorld();
-                world.dropItem(p.getLocation(), new ItemStack(block, v));
+                World world = player.getWorld();
+                world.dropItem(player.getLocation(), new ItemStack(material, amount));
             }
         }
     }
@@ -146,11 +139,10 @@ public class DropEvent implements Listener {
                 return Material.IRON_ORE;
             } else if (material.equals(Material.COAL)) {
                 return Material.COAL_ORE;
-            } else if (material.equals(Material.COBBLESTONE)) {
+            } else {
                 return Material.STONE;
             }
         }
-        return Material.COBBLESTONE;
     }
 
 }

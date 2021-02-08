@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ArtMc-Drop.iml" filepath="$PROJECT_DIR$/ArtMc-Drop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cDrop.iml" filepath="$PROJECT_DIR$/cDrop.iml" />
     </modules>
   </component>
 </project>

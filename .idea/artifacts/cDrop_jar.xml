@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="cDrop:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/cDrop_jar</output-path>
+    <root id="archive" name="cDrop.jar" />
+  </artifact>
+</component>
