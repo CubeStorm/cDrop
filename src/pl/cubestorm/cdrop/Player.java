@@ -14,10 +14,9 @@ import static pl.cubestorm.cdrop.Main.getMineralList;
 
 public class Player implements Listener {
     public static HashMap<UUID, HashMap<String, Boolean>> playerDropStateList;
-    private final Mineral[] mineralList;
 
     public Player() {
-        this.mineralList = getMineralList();
+        playerDropStateList = new HashMap<>();
     }
 
     public static Boolean getDropState(UUID uuid, String item) {
@@ -32,8 +31,8 @@ public class Player implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         HashMap<String, Boolean> dropStateList = new HashMap<>();
 
-        for (Mineral mineral: this.mineralList)
-            dropStateList.put(mineral.getName(), true);
+        for (Mineral mineral: getMineralList())
+            dropStateList.put(mineral.getItem(), true);
 
         playerDropStateList.put(event.getPlayer().getUniqueId(), dropStateList);
     }

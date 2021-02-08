@@ -39,43 +39,35 @@ public class Drop implements Listener {
 
                 if (player.hasPermission("drop.vip"))
                     extraChance += Config.getVipChance();
-                if (true)
+                if (player.hasPermission("drop.turbodrop"))
                     extraChance += Config.getTurboDropChance();
 
-                if (Math.random() * 100 <= Config.getDropChance(object.getName()) + extraChance)
-                    if (getDropState(player.getUniqueId(), object.getName()))
+                if (Math.random() * 100 <= Math.min(100, Config.getDropChance(object.getItem()) * extraChance))
+                    if (getDropState(player.getUniqueId(), object.getItem()))
                         this.giveItem(object, player, itemInHand);
             }
-        }
+        } else if (block.equals(Material.DIAMOND_ORE) || block.equals(Material.EMERALD_ORE) || block.equals(Material.REDSTONE_ORE) || block.equals(Material.LAPIS_ORE) || block.equals(Material.GOLD_ORE) || block.equals(Material.IRON_ORE) || block.equals(Material.COAL_ORE))
+            event.setDropItems(false);
     }
 
-    /**
-     * Final method relating to give player dropped item, send message and give exp
-     */
     public void giveItem(Mineral mineral, Player player, ItemStack itemInHand) {
-        String mineralName = mineral.getName();
+        String mineralItem = mineral.getItem();
 
         // Check if player mine with FORTUNE (1/2/3) or not
         int amount = 1;
-        if (mineral.getName().equals("Cobblestone"))
+        if (!mineralItem.equals("cobblestone"))
             amount = this.setValueFortune(itemInHand);
 
         // Check if player mine with SILK TOUCH or not
         Material droppedBlock = this.setDrop(itemInHand, mineral.getMaterial());
 
         this.addToInv(player, droppedBlock, amount);
-        player.giveExp(Config.getExp(mineralName));
+        player.giveExp(Config.getExp(mineralItem));
 
-        if (mineralName.equals("Cobblestone"))
-            player.sendMessage(msg("&7Gratulacje! Trafiles na &a" + mineralName + "&7 (&a" + amount + "&7)"));
+        if (!mineralItem.equals("cobblestone"))
+            player.sendMessage(msg("&7Gratulacje! Trafiles na &a" + mineral.getName() + "&7 (&a" + amount + "&7)"));
     }
 
-    /**
-     * Check player inventory and add or drop item (using in giveItem())
-     * @param player Player
-     * @param material Item, instance of Mineral class
-     * @param amount (value) Amount of dropped blocks
-     */
     public void addToInv(Player player, Material material, int amount) {
         if (material != null) {
             Inventory inv = player.getInventory();
@@ -89,11 +81,6 @@ public class Drop implements Listener {
         }
     }
 
-    /**
-     * Check if is full player's inventory (using in addToInv())
-     * @param inv Players inventory
-     * @return Boolean
-     */
     public boolean isFullInv(Inventory inv) {
         for (ItemStack item: inv.getContents()) {
             if (item == null)
@@ -102,11 +89,6 @@ public class Drop implements Listener {
         return true;
     }
 
-    /**
-     * Check if player's item have fortune enchant and return value of item
-     * @param item Item in player's main hand
-     * @return Value (amount)
-     */
     public int setValueFortune(ItemStack item) {
         int value = 1;
         if (item.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
@@ -115,33 +97,26 @@ public class Drop implements Listener {
         return value;
     }
 
-    /**
-     * Check if player's item have silk touch enchant and return valid block
-     * @param item Player's item in main hand
-     * @param material Dropped block
-     * @return Block, instance of Material class
-     */
     public Material setDrop(ItemStack item, Material material) {
         if (!item.containsEnchantment(Enchantment.SILK_TOUCH)) {
             return material;
         } else {
-            if (material.equals(Material.DIAMOND)) {
+            if (material.equals(Material.DIAMOND))
                 return Material.DIAMOND_ORE;
-            } else if (material.equals(Material.EMERALD)) {
+            else if (material.equals(Material.EMERALD))
                 return Material.EMERALD_ORE;
-            } else if (material.equals(Material.REDSTONE)) {
+            else if (material.equals(Material.REDSTONE))
                 return Material.REDSTONE_ORE;
-            } else if (material.equals(Material.LAPIS_LAZULI)) {
+            else if (material.equals(Material.LAPIS_LAZULI))
                 return Material.LAPIS_ORE;
-            } else if (material.equals(Material.GOLD_INGOT)) {
+            else if (material.equals(Material.GOLD_INGOT))
                 return Material.GOLD_ORE;
-            } else if (material.equals(Material.IRON_INGOT)) {
+            else if (material.equals(Material.IRON_INGOT))
                 return Material.IRON_ORE;
-            } else if (material.equals(Material.COAL)) {
+            else if (material.equals(Material.COAL))
                 return Material.COAL_ORE;
-            } else {
+            else
                 return Material.STONE;
-            }
         }
     }
 
