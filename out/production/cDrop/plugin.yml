@@ -1,0 +1,27 @@
+name: cDrop
+version: 1.0;
+description: cDrop plugin by CubeStorm
+author: CubeStorm
+main: pl.cubestorm.cdrop.Main
+api-version: 1.16
+commands:
+  drop:
+    description: Drop plugin by CubeStorm
+    usage: /drop
+
+permissions:
+  drop.vip:
+    description: Allows to have extra chance to drop
+    default: op
+
+  drop.turbodrop:
+    description: Allows to have extra chance to drop
+    default: op
+
+  drop.*:
+    description: Allows to all
+    default: op
+    children: [
+      drop.vip
+      drop.turbodrop
+    ]

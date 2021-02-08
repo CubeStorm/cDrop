@@ -1,0 +1,39 @@
+# Chance to drop
+dropChance:
+  diamond: 0.5
+  emerald: 1
+  redstone: 2
+  lapis: 2
+  gold: 3
+  iron: 3
+  coal: 4
+  cobblestone: 100
+
+# Exp from drop
+exp:
+  diamond: 5
+  emerald: 5
+  redstone: 4
+  lapis: 4
+  gold: 3
+  iron: 3
+  coal: 2
+  cobblestone: 0
+
+# Displayed name (Don't use color (&))
+name:
+  diamond: Diament
+  emerald: Emerald
+  redstone: Redstone
+  lapis: Lapis
+  gold: Zloto
+  iron: Zelazo
+  coal: Wegiel
+  cobblestone: Cobblestone
+
+# Vip extra chance
+vipChance: 3
+
+# TurboDrop extra chance
+turboDropChance: 5
+
